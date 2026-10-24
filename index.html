@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f4f6f2">
+  <meta name="description" content="A private money manager for tracking income, expenses, and safe spending limits.">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+  <title>Money Manager</title>
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <a class="brand" href="#" aria-label="Money Manager home">
+        <span class="brand-mark" aria-hidden="true">$</span>
+        <span>Money Manager</span>
+      </a>
+      <div class="top-actions">
+        <button class="button button-quiet import-button" id="import-button" type="button">Import backup</button>
+        <button class="button button-quiet" id="backup-button" type="button">Export backup</button>
+        <button class="button button-primary" id="add-button" type="button"><span aria-hidden="true">＋</span> Add entry</button>
+      </div>
+    </header>
+
+    <section class="intro">
+      <div>
+        <p class="eyebrow" id="today-label">YOUR MONEY, CLEARLY</p>
+        <h1>Take control of YOUR money!</h1>
+        <p class="subhead">Your spending limits account for the income and expenses you’ve entered.</p>
+      </div>
+      <button class="balance-edit" id="balance-edit" type="button" aria-label="Edit current balance">
+        <span>Available balance</span><strong id="current-balance">$0.00</strong><span class="edit-hint">Edit starting balance <span aria-hidden="true">↗</span></span>
+      </button>
+    </section>
+
+    <section class="limits" aria-labelledby="limits-heading">
+      <div class="section-heading"><div><p class="eyebrow">SPENDING PLAN</p><h2 id="limits-heading">Safe to spend</h2></div><span class="plan-note">Keeps your projected balance above $0</span></div>
+      <div class="period-selector" role="group" aria-label="Choose a spending period">
+        <button class="period-button active" type="button" data-budget-view="daily" aria-pressed="true">Daily</button>
+        <button class="period-button" type="button" data-budget-view="weekly" aria-pressed="false">Weekly</button>
+        <button class="period-button" type="button" data-budget-view="monthly" aria-pressed="false">Monthly</button>
+      </div>
+      <article class="budget-view-card" aria-live="polite">
+        <div class="budget-view-top"><div><span class="period" id="budget-period-label">DAILY SPENDING LIMIT</span><strong class="budget-view-amount" id="budget-amount">$0.00</strong></div><span class="budget-range" id="budget-range"></span></div>
+        <div class="budget-breakdown" id="budget-breakdown"></div>
+      </article>
+      <p class="calculation-note">The monthly safe amount is split across the remaining weeks, including this week. Daily divides this week’s amount by its remaining days, including today. Estimates use your balance and dated entries.</p>
+    </section>
+
+    <section class="activity" aria-labelledby="activity-heading">
+      <div class="section-heading activity-heading"><div><p class="eyebrow">YOUR RECORD</p><h2 id="activity-heading">Recent entries</h2></div><div class="filters"><button class="filter active" data-filter="all" type="button">All</button><button class="filter" data-filter="income" type="button">Income</button><button class="filter" data-filter="expense" type="button">Expenses</button></div></div>
+      <div class="table-wrap">
+        <table><thead><tr><th scope="col">DETAILS</th><th scope="col">DATE</th><th scope="col">TYPE</th><th scope="col" class="amount-col">AMOUNT</th><th scope="col"><span class="sr-only">Actions</span></th></tr></thead><tbody id="entry-list"></tbody></table>
+        <div class="empty-state" id="empty-state"><span class="empty-icon" aria-hidden="true">↗</span><h3>Your money story starts here</h3><p>Add your current balance, then record income and expenses to see your spending plan.</p><button class="button button-primary" id="empty-add-button" type="button">Add your first entry</button></div>
+      </div>
+      <div class="history-footer"><span id="history-count">No entries yet</span><span>Entries are saved on this device. You can export a backup anytime.</span></div>
+    </section>
+    <section class="reports" aria-labelledby="reports-heading">
+      <div class="section-heading reports-heading"><div><p class="eyebrow">SAVED HISTORY</p><h2 id="reports-heading">Monthly reports</h2></div><div class="report-actions"><span class="plan-note">Available for the past year</span><button class="button button-quiet" id="reports-button" type="button">Export reports</button></div></div>
+      <div class="report-list" id="report-list"></div>
+      <div class="report-empty" id="report-empty">Monthly summaries will appear here as you add entries.</div>
+    </section>
+    <footer class="footer"><span>Made for a clearer view of your money.</span><span>Reports and entries are kept for 1 year before you’re asked about older entries.</span></footer>
+  </main>
+
+  <dialog id="entry-dialog" class="dialog">
+    <form id="entry-form" method="dialog">
+      <div class="dialog-heading"><div><p class="eyebrow">MONEY MOVEMENT</p><h2 id="entry-dialog-title">Add an entry</h2></div><button class="icon-button" type="button" data-close="entry-dialog" aria-label="Close">×</button></div>
+      <div class="type-switch"><button type="button" class="type-choice selected" data-type="expense">Expense</button><button type="button" class="type-choice" data-type="income">Income</button></div>
+      <input id="entry-type" type="hidden" value="expense">
+      <label class="field" id="expense-category-field"><span>Bill or purchase</span><select id="entry-category" required>
+        <option value="Rent / mortgage">Rent / mortgage</option>
+        <option value="Electricity">Electricity</option>
+        <option value="Water / sewer">Water / sewer</option>
+        <option value="Natural gas">Natural gas</option>
+        <option value="Internet">Internet</option>
+        <option value="Phone">Phone</option>
+        <option value="Home insurance">Home insurance</option>
+        <option value="Car payment">Car payment</option>
+        <option value="Car insurance">Car insurance</option>
+        <option value="Groceries">Groceries</option>
+        <option value="Fuel">Fuel</option>
+        <option value="Childcare">Childcare</option>
+        <option value="Medical / pharmacy">Medical / pharmacy</option>
+        <option value="Credit card payment">Credit card payment</option>
+        <option value="Subscriptions">Subscriptions</option>
+        <option value="Household supplies">Household supplies</option>
+        <option value="Other">Other</option>
+      </select></label>
+      <label class="field" id="other-description-field" hidden><span>Enter bill or purchase name</span><input id="entry-other-description" maxlength="80" placeholder="e.g. Pet care"></label>
+      <label class="field" id="income-description-field" hidden><span>Income source</span><input id="entry-description" maxlength="80" placeholder="e.g. Paycheck"></label>
+      <label class="field"><span>Amount</span><div class="money-input"><span>$</span><input id="entry-amount" type="number" min="0.01" step="0.01" inputmode="decimal" placeholder="0.00" required></div></label>
+      <label class="field"><span>Date</span><input id="entry-date" type="date" required></label>
+      <div class="dialog-actions"><button class="button button-quiet" type="button" data-close="entry-dialog">Cancel</button><button class="button button-primary" type="submit">Save entry</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="balance-dialog" class="dialog">
+    <form id="balance-form" method="dialog">
+      <div class="dialog-heading"><div><p class="eyebrow">YOUR STARTING POINT</p><h2>Set current balance</h2></div><button class="icon-button" type="button" data-close="balance-dialog" aria-label="Close">×</button></div>
+      <p class="dialog-copy">Enter your opening balance before the entries you’ll record. Entries dated before today are kept for reports but don’t change this balance.</p>
+      <label class="field"><span>Starting balance</span><div class="money-input"><span>$</span><input id="starting-balance" type="number" step="0.01" inputmode="decimal" placeholder="0.00" required></div></label>
+      <div class="dialog-actions"><button class="button button-quiet" type="button" data-close="balance-dialog">Cancel</button><button class="button button-primary" type="submit">Save balance</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="retention-dialog" class="dialog">
+    <form id="retention-form" method="dialog">
+      <div class="dialog-heading"><div><p class="eyebrow">ONE-YEAR HISTORY</p><h2>Review older entries</h2></div><button class="icon-button" type="button" data-close="retention-dialog" aria-label="Close">×</button></div>
+      <p class="dialog-copy" id="retention-copy"></p>
+      <p class="backup-reminder">You can export a backup first if you want to keep a copy.</p>
+      <div class="dialog-actions dialog-actions-retention"><button class="button button-quiet" id="retention-backup" type="button">Export backup</button><button class="button button-quiet" type="button" data-close="retention-dialog">Keep entries</button><button class="button button-danger" type="submit">Delete older entries</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="notice-dialog" class="dialog notice-dialog">
+    <form method="dialog"><div class="dialog-heading"><div><p class="eyebrow">MONEY MANAGER</p><h2 id="notice-title">Notice</h2></div><button class="icon-button" type="submit" aria-label="Close">×</button></div><p class="dialog-copy" id="notice-copy"></p><div class="dialog-actions"><button class="button button-primary" type="submit">Got it</button></div></form>
+  </dialog>
+
+  <input type="file" id="import-file" accept="application/json,.json" hidden>
+  <script src="app.js" defer></script>
+</body>
+</html>
